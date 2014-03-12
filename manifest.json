@@ -6,12 +6,12 @@
   },
 
   "browser_action": {
-    "default_icon": "images/worldwide.png",
+    "default_icon": "images/quora-16x16.png",
     "default_title": "Quora Full Access"
   },
 
   "description": "An extension to access the unblock full pages on Quora and remove the nagging login/sign-up blocker..",
-  "icons": {"16": "images/worldwide.png"},
+  "icons": {"16": "images/quora-16x16.png"},
   "manifest_version" : 2,
   "name": "Quora Full Access",
 
@@ -22,9 +22,5 @@
   ],
 
   "update_url":"http://clients2.google.com/service/update2/crx",
-  "version": "1",
-
-  "web_accessible_resources": [
-    "images/worldwide.png"
-  ]
+  "version": "1"
 }
