@@ -11,13 +11,15 @@
  */
 function QuoraFullAccess() {
   /*
-   * @const{Array.String}
+   * @const{Array.Regex}
    * The list of pathname prefixes that need to be ignored when adding the
    * 'share' argument to the URLs.
    */
   this.PATHNAMES_TO_IGNORE = [
-    '/ajax',
-    '/webnode2'
+    /\/ *$/,
+    /\/ajax.*/,
+    /\/e2e.*/,
+    /\/webnode2.*/
   ];
 
   /*
@@ -63,17 +65,25 @@ function QuoraFullAccess() {
  * @return {chrome.webRequest.BlockingResponse)}
  */
 QuoraFullAccess.prototype.onBeforeRequestCallback = function(details) {
-  var url = details.url;
-  if (this.ignoreUrl(url)) {
+  var anchorElement = this.getElementFromUrl(details.url)
+  if (this.ignoreRequest(anchorElement)) {
     return;
   }
 
-  var anchorElement = this.getElementFromUrl(url)
   var params = this.getParamsFromElement(anchorElement);
   if (!this.isSharedAlready(params))
   {
     params[this.SHARE_PARAMETER] = 1;
-    //return {redirectUrl: };
+    var paramsArray = Object.keys(params).reduce(
+        function(previousValue, currentValue, index, array){
+          var key = encodeURIComponent(currentValue);
+          var value = encodeURIComponent(params[currentValue]);
+          previousValue.push(key + '=' + value)
+          return previousValue;
+        }, []);
+    var paramsString = paramsArray.join('&');
+    anchorElement.search = paramsString;
+    return {redirectUrl: anchorElement.href};
   }
 };
 
@@ -122,12 +132,12 @@ QuoraFullAccess.prototype.getPathnameFromUrl = function(url)
  * @this {QuoraFullAccess}
  * @param {Window} aWindow An existing or newly created window.
  */
-QuoraFullAccess.prototype.ignoreUrl = function(url)
+QuoraFullAccess.prototype.ignoreRequest = function(element)
 {
-  var pathname = this.getPathnameFromUrl(url);
+  var pathname = element.pathname;
   for (var i = 0; i < this.PATHNAMES_TO_IGNORE.length; i++) {
-    var pathnameToIgnore = this.PATHNAMES_TO_IGNORE[i];
-    if (pathname.indexOf(pathnameToIgnore) === 0) {
+    var pathnameRegexToIgnore = this.PATHNAMES_TO_IGNORE[i];
+    if (pathname.match(pathnameRegexToIgnore)) {
       return true;
     }
   }
@@ -142,6 +152,7 @@ QuoraFullAccess.prototype.ignoreUrl = function(url)
  */
 QuoraFullAccess.prototype.getParamsFromElement = function(element)
 {
+  var params = {}
   if (element.search && element.search.length > 1) {
     var parts = element.search.substring(1);
     var vars = parts.split('&');
