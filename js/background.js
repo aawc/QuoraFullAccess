@@ -28,31 +28,14 @@ function QuoraFullAccess() {
    */
   this.SHARE_PARAMETER = 'share';
 
-  /**
-   * A function binding onBeforeRequestCallback to this QuoraFullAccess object.
+  /*
+   * Add a listener function to each outgoing request. That way, when a request
+   * that we are interested in is being made, we can cancel/modify it.
    */
-  this.onBeforeRequest = this.onBeforeRequestCallback.bind(this);
-
-  var that = this;
-  /**
-   * Iterate over all current windows and start listening to web requests in
-   * them.
-   */
-  chrome.windows.getAll(
-      function(windows) {
-        for (var index in windows) {
-          var aWindow = windows[index];
-          that.onBeforeRequestForWindow(aWindow);
-        }
-      });
-
-  /**
-   * If any window is created, start listening to web requests from that window.
-   */
-  chrome.windows.onCreated.addListener(
-      function(aWindow) {
-        that.onBeforeRequestForWindow(aWindow);
-      });
+  chrome.webRequest.onBeforeRequest.addListener(
+      this.onBeforeRequest.bind(this),
+      {urls: ['*://www.quora.com/*']},
+      ['blocking']);
 }
 
 
@@ -64,7 +47,7 @@ function QuoraFullAccess() {
  *     be sent out to the server.
  * @return {chrome.webRequest.BlockingResponse)}
  */
-QuoraFullAccess.prototype.onBeforeRequestCallback = function(details) {
+QuoraFullAccess.prototype.onBeforeRequest = function(details) {
   var anchorElement = this.getElementFromUrl(details.url)
   if (this.ignoreRequest(anchorElement)) {
     return;
@@ -85,21 +68,6 @@ QuoraFullAccess.prototype.onBeforeRequestCallback = function(details) {
     anchorElement.search = paramsString;
     return {redirectUrl: anchorElement.href};
   }
-};
-
-
-/**
- * Sets up a listener for the OnBeforeRequest event for a window.
- * This way, we can modify the URL for any requests to Quora so that the nagging
- * login widget doesn't appear.
- * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
- */
-QuoraFullAccess.prototype.onBeforeRequestForWindow = function(aWindow) {
-  chrome.webRequest.onBeforeRequest.addListener(
-      this.onBeforeRequest,
-      {urls: ['*://www.quora.com/*'], windowId: aWindow.id},
-      ['blocking']);
 };
 
 
@@ -169,13 +137,18 @@ QuoraFullAccess.prototype.getParamsFromElement = function(element)
 
 
 /**
- * TODO
+ * Determine if the URL already contains the 'share' argument. If it is, we
+ * don't need to add the argument again.
  * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
+ * @param {Object.<String, String>} params A dictionary of GET parameters in the
+ *  URL.
+ * @return {boolean} Whether the GET argument list contains a non-empty 'share'
+ *  argument
  */
 QuoraFullAccess.prototype.isSharedAlready = function(params)
 {
-  return Object.keys(params).indexOf(this.SHARE_PARAMETER) !== -1;
+  var shareIndex = Object.keys(params).indexOf(this.SHARE_PARAMETER);
+  return (shareIndex !== -1) && params[shareIndex];
 }
 
 
