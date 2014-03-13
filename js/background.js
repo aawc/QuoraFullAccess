@@ -41,6 +41,8 @@ function QuoraFullAccess() {
 
 /**
  * Gets called every time the browser is about to send a web request out.
+ * If the request is for a URL we would like to rewrite, we intercept it, change
+ * the URL (add a GET parameter) and send the changed request out.
  * @this {QuoraFullAccess}
  * @param {chrome.webRequest.onBeforeRequest.Details} details An object,
  *     that among other things, contains an array of the header fields that will
@@ -85,9 +87,13 @@ QuoraFullAccess.prototype.getElementFromUrl = function(url)
 
 
 /**
- * TODO
+ * Returns the pathname of the given URL. For instance,
+ * if URL is: http://aawc.github.io/blog/
+ * then the pathname is: /blog/
+ *
  * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
+ * @param {String} url A URL
+ * @return {String} The pathname of the URL.
  */
 QuoraFullAccess.prototype.getPathnameFromUrl = function(url)
 {
@@ -96,9 +102,12 @@ QuoraFullAccess.prototype.getPathnameFromUrl = function(url)
 
 
 /**
- * TODO
+ * Whether we are interested in the URL that the element is pointing to. 
  * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
+ * @param {Object} element A DOMElement object of type 'a' that points to the
+ *     URL that is being requested.
+ * @return {boolean} Whether we are interested in the URL that the element is
+ *     pointing to. 
  */
 QuoraFullAccess.prototype.ignoreRequest = function(element)
 {
@@ -114,9 +123,13 @@ QuoraFullAccess.prototype.ignoreRequest = function(element)
 
 
 /**
- * TODO
+ * Get a dictionary of the GET parameters and their value in the URL that the
+ * given DOM element points to.
  * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
+ * @param {Object} element A DOMElement object of type 'a' that points to the
+ *    URL that is being requested.
+ * @return {Object.<String, String>} A dictionary of GET parameters in the
+ *    URL.
  */
 QuoraFullAccess.prototype.getParamsFromElement = function(element)
 {
@@ -141,9 +154,9 @@ QuoraFullAccess.prototype.getParamsFromElement = function(element)
  * don't need to add the argument again.
  * @this {QuoraFullAccess}
  * @param {Object.<String, String>} params A dictionary of GET parameters in the
- *  URL.
+ *    URL.
  * @return {boolean} Whether the GET argument list contains a non-empty 'share'
- *  argument
+ *    argument
  */
 QuoraFullAccess.prototype.isSharedAlready = function(params)
 {
