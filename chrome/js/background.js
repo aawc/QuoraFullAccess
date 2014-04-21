@@ -50,7 +50,7 @@ function QuoraFullAccess() {
  * @return {chrome.webRequest.BlockingResponse)}
  */
 QuoraFullAccess.prototype.onBeforeRequest = function(details) {
-  var anchorElement = this.getElementFromUrl(details.url)
+  var anchorElement = this.getElementFromUrl(details.url);
   if (this.ignoreRequest(anchorElement)) {
     return;
   }
@@ -74,16 +74,17 @@ QuoraFullAccess.prototype.onBeforeRequest = function(details) {
 
 
 /**
- * TODO
- * @this {QuoraFullAccess}
- * @param {Window} aWindow An existing or newly created window.
+ * Returns an anchor element that points to the given URL.
+ * This is done to parse the URL and get individual components.
+ * @this {AlwaysSmileAmazon}
+ * @param {string} url The URL to which the element should point to.
  */
 QuoraFullAccess.prototype.getElementFromUrl = function(url)
 {
   var anchorElement = document.createElement('a');
   anchorElement.href = url;
   return anchorElement;
-}
+};
 
 
 /**
@@ -98,7 +99,7 @@ QuoraFullAccess.prototype.getElementFromUrl = function(url)
 QuoraFullAccess.prototype.getPathnameFromUrl = function(url)
 {
   return this.getElementFromUrl(url).pathname;
-}
+};
 
 
 /**
@@ -119,7 +120,7 @@ QuoraFullAccess.prototype.ignoreRequest = function(element)
     }
   }
   return false;
-}
+};
 
 
 /**
@@ -133,7 +134,7 @@ QuoraFullAccess.prototype.ignoreRequest = function(element)
  */
 QuoraFullAccess.prototype.getParamsFromElement = function(element)
 {
-  var params = {}
+  var params = {};
   if (element.search && element.search.length > 1) {
     var parts = element.search.substring(1);
     var vars = parts.split('&');
@@ -146,7 +147,7 @@ QuoraFullAccess.prototype.getParamsFromElement = function(element)
   }
 
   return params;
-}
+};
 
 
 /**
@@ -162,7 +163,7 @@ QuoraFullAccess.prototype.isSharedAlready = function(params)
 {
   var shareIndex = Object.keys(params).indexOf(this.SHARE_PARAMETER);
   return (shareIndex !== -1) && params[shareIndex];
-}
+};
 
 
 var quoraFullAccess = new QuoraFullAccess();
